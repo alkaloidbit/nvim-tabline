@@ -3,8 +3,7 @@
 
 local M = {}
 local fn = vim.fn
-local utilities = require "utilities"
-
+local utilities = require('utilities')
 
 M.options = {
     show_index = true,
@@ -23,7 +22,7 @@ local function tabline(options)
         local bufnr = buflist[winnr]
         local bufname = fn.bufname(bufnr)
         local bufmodified = fn.getbufvar(bufnr, '&mod')
-        local  tab_is_current = 0
+        local tab_is_current = 0
         s = s .. '%' .. index .. 'T'
         if index == fn.tabpagenr() then
             s = s .. '%#TabLineFill#%#TabLineSel#'
@@ -64,11 +63,11 @@ local function tabline(options)
     end
 
     local session_name = fn.tr(vim.v.this_session, '%', '/')
-        s = s .. '%#TabLineFill#%T%=%#TabLine#' .. ' %{badge#branch()}   '
-        s = s
-            .. ' %{badge#session("'
-            .. fn.fnamemodify(session_name, ':t:r')
-            .. ' ")}'
+    s = s .. '%#TabLineFill#%T%=%#TabLine#' .. ' %{badge#branch()}   '
+    s = s
+        .. ' %{badge#session("'
+        .. fn.fnamemodify(session_name, ':t:r')
+        .. ' ")}'
     return s
 end
 

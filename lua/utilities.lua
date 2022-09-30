@@ -4,7 +4,7 @@ local colors = require('colors')
 
 local cterm = nil
 
-function set_iconhighlight(iconhilight, state)
+local function set_iconhighlight(iconhilight, state)
     -- iconhilight = 'DevIconLua', state = 'selected' ||  'inactive'
     -- We get icon fg color hl = { foreground = 6193500 }
     local success, hl =
