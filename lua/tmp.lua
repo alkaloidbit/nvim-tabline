@@ -7,7 +7,8 @@ icon, iconhilight = require('nvim-web-devicons').get_icon('tmp', 'lua')
 function set_iconhighlight(iconhilight, state)
     -- iconhilight = 'DevIconLua', state = 'selected' ||  'inactive'
     -- We get icon fg color hl = { foreground = 6193500 }
-    local success, hl = pcall(vim.api.nvim_get_hl_by_name, iconhilight, not cterm)
+    local success, hl =
+        pcall(vim.api.nvim_get_hl_by_name, iconhilight, not cterm)
     fg = colors.get_color({ name = iconhilight, attribute = 'fg' })
     -- We get fg color #5e81ac
 
@@ -23,9 +24,9 @@ function set_iconhighlight(iconhilight, state)
     local iconhlcolors = {}
     iconhlcolors.fg = fg
     iconhlcolors.bg = bg
-    iconhlcolors.default = true 
+    iconhlcolors.default = true
 
-    local iconhlname = tabstate[state]..iconhilight
+    local iconhlname = tabstate[state] .. iconhilight
 
     vim.api.nvim_set_hl(0, iconhlname, iconhlcolors)
 end

@@ -4,8 +4,6 @@
 local M = {}
 local fn = vim.fn
 local utilities = require('utilities')
-local badge_numeric_charset =
-    { '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' }
 
 M.options = {
     show_index = true,
@@ -15,81 +13,54 @@ M.options = {
     filename_max_dirs = 2,
     dir_max_chars = 5,
 }
-local function is_file_buffer(bufnr)
-    return fn.empty(fn.getbufvar(bufnr, '&buftype'))
-end
-
-local function numtr(number, charset)
-    return charset[number]
-end
 
 local function tabline(options)
-    local s = '%#TabLineAlt# %{badge#project()} %#TabLineAltShade#'
+    local s = utilities.get_project_root_dir()
+
+    -- Loop over tabpages
     for index = 1, fn.tabpagenr('$') do
-        -- current window of tab index
+        -- current window
         local winnr = fn.tabpagewinnr(index)
-        -- buffer list in the current window
+        -- buffers in current window
         local buflist = fn.tabpagebuflist(index)
-        -- current buffer
+        -- current buffer in current win
         local bufnr = buflist[winnr]
-        local bufname = fn.bufname(bufnr)
         local bufmodified = fn.getbufvar(bufnr, '&mod')
-        local tab_is_current = 0
-        s = s .. '%' .. index .. 'T'
+        local bufname = fn.bufname(bufnr)
+        local tabstate = 'inactive'
+        local opts = {
+            extension = fn.fnamemodify(bufname, ':e'),
+            filename = fn.fnamemodify(bufname, ':t'),
+            filetype = fn.getbufvar(bufnr, '&filetype'),
+        }
+
+        s = s .. '%' .. index .. 'T' .. ' '
         if index == fn.tabpagenr() then
             s = s .. '%#TabLineFill#%#TabLineSel#'
-            tab_is_current = 1
+            tabstate = 'selected'
         else
             s = s .. '%#TabLine#'
         end
-        -- tab index
-        s = s .. ' '
         -- index
-        if options.show_index then
-            s = s .. bufnr .. '. '
-        end
+        s = options.show_index and s .. ' ' .. bufnr .. '. ' or ''
+
+        -- icon
+        s = s .. utilities.get_icon(opts, tabstate)
 
         -- buf name
-        s = s .. utilities.filename(bufnr, options, 'tabname', tab_is_current)
+        s = s .. utilities.filename(bufname, options, 'tabname', tabstate)
 
-        local wincount = #buflist
-        for _, v in ipairs(buflist) do
-            local buffiletype = fn.getbufvar(v, '&filetype')
-            if fn.empty(buffiletype) == 1 or is_file_buffer(v) ~= 1 then
-                wincount = wincount - 1
-            end
-        end
-        if wincount > 1 then
-            s = s .. numtr(wincount, badge_numeric_charset)
-        end
+        s = s .. utilities.wincount(buflist)
+
         -- modify indicator
-        if
-            bufmodified == 1
-            and options.show_modify
-            and options.modify_indicator ~= nil
-        then
-            if index == fn.tabpagenr() then
-                s = s
-                    .. '%#TabLineSelModified#'
-                    .. options.modify_indicator
-                    .. ' %*'
-            else
-                s = s .. '%*' .. options.modify_indicator .. ' %*'
-            end
-        end
-        if index == fn.tabpagenr() then
-            s = s .. '%#TabLineSel# %#TabLineFill#'
-        else
-            s = s .. '%#TabLine#'
-        end
+        s = s .. utilities.modified(index, bufmodified, options)
+
+        s = (index == fn.tabpagenr()) and s .. '%#TabLineSel# %#TabLineFill#'
+            or s .. '%#TabLine#'
     end
 
-    local session_name = fn.tr(vim.v.this_session, '%', '/')
-    s = s .. '%#TabLineFill#%T%=%#TabLine#' .. ' %{badge#branch()}   '
-    s = s
-        .. ' %{badge#session("'
-        .. fn.fnamemodify(session_name, ':t:r')
-        .. ' ")}'
+    s = s .. utilities.get_current_session()
+
     return s
 end
 
