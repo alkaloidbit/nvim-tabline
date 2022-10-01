@@ -1,6 +1,8 @@
 local M = {}
 local fn = vim.fn
 local colors = require('colors')
+local badge_numeric_charset =
+    { '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' }
 
 local cterm = nil
 
@@ -9,7 +11,9 @@ local function set_iconhighlight(iconhilight, state)
     -- We get icon fg color hl = { foreground = 6193500 }
     local success, hl =
         pcall(vim.api.nvim_get_hl_by_name, iconhilight, not cterm)
-    fg = colors.get_color({ name = iconhilight, attribute = 'fg' })
+
+    -- get hexa foreground icon color
+    local fg = colors.get_color({ name = iconhilight, attribute = 'fg' })
     -- We get fg color #5e81ac
 
     -- state of tab
@@ -19,7 +23,7 @@ local function set_iconhighlight(iconhilight, state)
 
     -- tab background ( tabstate )
     local tabhl = vim.api.nvim_get_hl_by_name(tabstate[state], not cterm)
-    bg = colors.get_color({ name = tabstate[state], attribute = 'bg' })
+    local bg = colors.get_color({ name = tabstate[state], attribute = 'bg' })
 
     local iconhlcolors = {}
     iconhlcolors.fg = fg
@@ -103,6 +107,55 @@ function M.filename(bufnr, options, cache_key, tab_is_current)
             .. fn.join(parts, '/')
     end
     return label
+end
+
+local function is_file_buffer(bufnr)
+    return fn.empty(fn.getbufvar(bufnr, '&buftype'))
+end
+
+local function numtr(number, charset)
+    return charset[number]
+end
+
+function M.wincount(buflist)
+    local wincount = #buflist
+    for _, v in ipairs(buflist) do
+        local buffiletype = fn.getbufvar(v, '&filetype')
+        if fn.empty(buffiletype) == 1 or is_file_buffer(v) ~= 1 then
+            wincount = wincount - 1
+        end
+    end
+    return (wincount > 1) and numtr(wincount, badge_numeric_charset) or ''
+end
+
+function M.modified(tabpage, bufmodified, options)
+    local s = ''
+    if
+        bufmodified == 1
+        and options.show_modify
+        and options.modify_indicator ~= nil
+    then
+        if tabpage == fn.tabpagenr() then
+            s = s
+                .. '%#TabLineSelModified#'
+                .. options.modify_indicator
+                .. ' %*'
+        else
+            s = s .. '%*' .. options.modify_indicator .. ' %*'
+        end
+    end
+    return s
+end
+
+function M.get_project_root_dir()
+    return '%#TabLineAlt# %{badge#project()} %#TabLineAltShade#'
+end
+function M.get_current_session()
+    local str = ''
+    str = str .. '%#TabLineFill#%T%=%#TabLine#' .. ' %{badge#branch()}   '
+    local session_name = fn.tr(vim.v.this_session, '%', '/')
+    str = str .. ' ' .. fn.fnamemodify(session_name, ':t:r') .. ''
+    return str
 end
 
 return M
