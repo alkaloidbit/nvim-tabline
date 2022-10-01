@@ -4,6 +4,8 @@
 local M = {}
 local fn = vim.fn
 local utilities = require('utilities')
+local badge_numeric_charset =
+    { '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' }
 
 M.options = {
     show_index = true,
@@ -13,12 +15,22 @@ M.options = {
     filename_max_dirs = 2,
     dir_max_chars = 5,
 }
+local function is_file_buffer(bufnr)
+    return fn.empty(fn.getbufvar(bufnr, '&buftype'))
+end
+
+local function numtr(number, charset)
+    return charset[number]
+end
 
 local function tabline(options)
     local s = '%#TabLineAlt# %{badge#project()} %#TabLineAltShade#'
     for index = 1, fn.tabpagenr('$') do
+        -- current window of tab index
         local winnr = fn.tabpagewinnr(index)
+        -- buffer list in the current window
         local buflist = fn.tabpagebuflist(index)
+        -- current buffer
         local bufnr = buflist[winnr]
         local bufname = fn.bufname(bufnr)
         local bufmodified = fn.getbufvar(bufnr, '&mod')
@@ -40,6 +52,16 @@ local function tabline(options)
         -- buf name
         s = s .. utilities.filename(bufnr, options, 'tabname', tab_is_current)
 
+        local wincount = #buflist
+        for _, v in ipairs(buflist) do
+            local buffiletype = fn.getbufvar(v, '&filetype')
+            if fn.empty(buffiletype) == 1 or is_file_buffer(v) ~= 1 then
+                wincount = wincount - 1
+            end
+        end
+        if wincount > 1 then
+            s = s .. numtr(wincount, badge_numeric_charset)
+        end
         -- modify indicator
         if
             bufmodified == 1

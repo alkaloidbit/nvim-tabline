@@ -74,7 +74,6 @@ function M.filename(bufnr, options, cache_key, tab_is_current)
     if bufname == '' then
         label = label .. options.no_name .. ' '
     else
-        P(filetype)
         local parts = shortenFilename(bufname, options)
         local iconhilight = '%#TabLine#'
         local icon = ''
@@ -88,8 +87,6 @@ function M.filename(bufnr, options, cache_key, tab_is_current)
             opts.extension = fn.fnamemodify(bufname, ':e')
             opts.path = bufname
             icon, iconhilight = get_icon(opts)
-            -- P(icon)
-            -- P(iconhilight)
         end
 
         local tabhighlight = (
