@@ -127,7 +127,7 @@ function M.filename(attrs, options, cache_key, state)
     -- TODO: handle other buffer type icon
     local label = ''
     if attrs.bufname == '' and fn.empty(attrs.buftype) == 1 then
-        label = label .. options.no_name .. ' '
+        label = label .. options.no_name
     elseif has_value(filename_alt_filetype, attrs.filetype) then
         label = label .. filename_alt_filetype[attrs.filetype]
     else
@@ -156,21 +156,16 @@ function M.wincount(buflist)
     return (wincount > 1) and numtr(wincount, badge_numeric_charset) or ''
 end
 
-function M.modified(tabpage, bufmodified, options)
+function M.modified(is_current_tabpage, bufmodified, options)
     local s = ''
     if
         bufmodified == 1
         and options.show_modify
         and options.modify_indicator ~= nil
     then
-        if tabpage == fn.tabpagenr() then
-            s = s
-                .. '%#TabLineSelModified#'
-                .. options.modify_indicator
-                .. ' %*'
-        else
-            s = s .. '%*' .. options.modify_indicator .. ' %*'
-        end
+        s = is_current_tabpage
+                and s .. '%#TabLineSelModified#' .. options.modify_indicator .. ' %*'
+            or s .. '%*' .. options.modify_indicator .. ' %*'
     end
     return s
 end

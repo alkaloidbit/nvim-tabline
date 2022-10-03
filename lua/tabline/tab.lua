@@ -11,7 +11,8 @@ function M.render(tabpage, options)
     local bufnr = buflist[winnr]
     local bufmodified = fn.getbufvar(bufnr, '&mod')
     local bufname = fn.bufname(bufnr)
-    local tabstate = 'inactive'
+    local is_current_tabpage = tabpage == fn.tabpagenr()
+    local tabstate = is_current_tabpage and 'selected' or 'inactive'
     local attrs = {
         bufnr = bufnr,
         bufname = bufname,
@@ -23,13 +24,9 @@ function M.render(tabpage, options)
 
     local s = '%' .. tabpage .. 'T' .. ' '
 
-    if tabpage == fn.tabpagenr() then
-        s = s .. utils.separator('TabLineFill', '')
-        s = s .. '%#TabLineSel#'
-        tabstate = 'selected'
-    else
-        s = s .. '%#TabLine#'
-    end
+    s = is_current_tabpage
+            and s .. utils.separator('TabLineFill', '') .. '%#TabLineSel#'
+        or '%#TabLine#'
 
     -- index
     s = (options.show_index and utils.is_file_buffer(bufnr) == 1)
@@ -42,11 +39,12 @@ function M.render(tabpage, options)
     s = s .. utils.wincount(buflist)
 
     -- modify indicator
-    s = s .. utils.modified(tabpage, bufmodified, options)
+    s = s .. utils.modified(is_current_tabpage, bufmodified, options)
 
-    s = (tabpage == fn.tabpagenr())
-            and s .. '%#TabLineSel#' .. utils.separator('TabLineFill', '')
+    s = is_current_tabpage
+            and s .. '%#TabLineSel# ' .. utils.separator('TabLineFill', '')
         or s .. '%#TabLine#'
     return s
 end
+
 return M
