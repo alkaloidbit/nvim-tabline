@@ -160,6 +160,8 @@ function M.modified(is_current_tabpage, attrs, options)
     local s = ''
     if
         attrs.bufmodified == 1
+        -- is file buffer
+        and fn.empty(attrs.buftype) == 1
         and options.show_modify
         and options.modify_indicator ~= nil
     then
