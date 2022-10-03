@@ -14,6 +14,22 @@ M.options = {
     dir_max_chars = 5,
 }
 
+function M.currentBufInfo()
+    local bufnr = vim.api.nvim_win_get_buf(0)
+    local bufname = fn.bufname(bufnr)
+    local filetype = fn.getbufvar(bufnr, '&filetype')
+    local buftype = fn.getbufvar(bufnr, '&buftype')
+    local extension = fn.fnamemodify(bufname, ':e')
+    local filename = fn.fnamemodify(bufname, ':t')
+
+    P('bufnr:' .. bufnr)
+    P('bufname:' .. bufname)
+    P('filetype: ' .. filetype)
+    P('buftype: ' .. buftype)
+    P('extension: ' .. extension)
+    P('filename: ' .. filename)
+end
+
 local function tabline(options)
     local s = utilities.get_project_root_dir()
 

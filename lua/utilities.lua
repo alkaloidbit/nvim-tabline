@@ -61,23 +61,23 @@ end
 
 function M.get_icon(opts, tabstate)
     local loaded, webdev_icons = pcall(require, 'nvim-web-devicons')
-    local alt_icon_filetype = {
-        fern = '',
-        undotree = '',
-        qf = '',
-        TelescopePrompt = '',
-        Trouble = '',
-        DiffviewFiles = '',
-        Outline = '',
-        NeogitStatus = '',
-        masonnvim = '',
-        spectre_panel = '',
-        neotree = '',
-        neotreepopup = '',
+    local icon_alt_filetype = {
+        fern = ' ',
+        undotree = ' ',
+        qf = ' ',
+        TelescopePrompt = ' ',
+        Trouble = ' ',
+        DiffviewFiles = ' ',
+        Outline = ' ',
+        NeogitStatus = ' ',
+        mason = ' ',
+        spectre_panel = ' ',
+        ['neo-tree'] = ' ',
+        ['neo-tree-popup'] = ' ',
     }
 
-    if has_value(alt_icon_filetype, opts.filetype) then
-        return alt_icon_filetype[opts.filetype]
+    if has_value(icon_alt_filetype, opts.filetype) then
+        return icon_alt_filetype[opts.filetype]
     else
         local icon, hl = webdev_icons.get_icon(opts.filename, opts.extension)
 
