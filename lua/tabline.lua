@@ -1,9 +1,10 @@
 -- nvim-tabline
 -- David Zhang <https://github.com/crispgm>
+local utils = require('tabline.utils')
+local tab = require('tabline.tab')
 
-local M = {}
 local fn = vim.fn
-local utilities = require('utilities')
+local M = {}
 
 M.options = {
     show_index = true,
@@ -31,51 +32,14 @@ function M.currentBufInfo()
 end
 
 local function tabline(options)
-    local s = utilities.get_project_root_dir()
+    local s = utils.get_project_root_dir()
 
     -- Loop over tabpages
-    for index = 1, fn.tabpagenr('$') do
-        -- current window
-        local winnr = fn.tabpagewinnr(index)
-        -- buffers in current window
-        local buflist = fn.tabpagebuflist(index)
-        -- current buffer in current win
-        local bufnr = buflist[winnr]
-        local bufmodified = fn.getbufvar(bufnr, '&mod')
-        local bufname = fn.bufname(bufnr)
-        local tabstate = 'inactive'
-        local opts = {
-            extension = fn.fnamemodify(bufname, ':e'),
-            filename = fn.fnamemodify(bufname, ':t'),
-            filetype = fn.getbufvar(bufnr, '&filetype'),
-        }
-
-        s = s .. '%' .. index .. 'T' .. ' '
-        if index == fn.tabpagenr() then
-            s = s .. '%#TabLineFill#%#TabLineSel#'
-            tabstate = 'selected'
-        else
-            s = s .. '%#TabLine#'
-        end
-        -- index
-        s = options.show_index and s .. ' ' .. bufnr .. '. ' or ''
-
-        -- icon
-        s = s .. utilities.get_icon(opts, tabstate)
-
-        -- buf name
-        s = s .. utilities.filename(bufname, options, 'tabname', tabstate)
-
-        s = s .. utilities.wincount(buflist)
-
-        -- modify indicator
-        s = s .. utilities.modified(index, bufmodified, options)
-
-        s = (index == fn.tabpagenr()) and s .. '%#TabLineSel# %#TabLineFill#'
-            or s .. '%#TabLine#'
+    for tabpage = 1, fn.tabpagenr('$') do
+        s = s .. tab.render(tabpage, options)
     end
 
-    s = s .. utilities.get_current_session()
+    s = s .. utils.get_current_session()
 
     return s
 end

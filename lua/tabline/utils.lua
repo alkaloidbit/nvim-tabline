@@ -1,10 +1,44 @@
 local M = {}
 local fn = vim.fn
-local colors = require('colors')
+local colors = require('tabline.colors')
 local badge_numeric_charset =
     { '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' }
 
+local icon_alt_filetype = {
+    fern = ' ',
+    undotree = ' ',
+    qf = ' ',
+    TelescopePrompt = ' ',
+    Trouble = ' ',
+    DiffviewFiles = ' ',
+    Outline = ' ',
+    NeogitStatus = ' ',
+    mason = ' ',
+    spectre_panel = ' ',
+    ['neo-tree'] = ' ',
+    ['neo-tree-popup'] = ' ',
+}
+
+local filename_alt_filetype = {
+    fern = 'FERN',
+    undotree = 'UNDOTREE',
+    qf = 'LIST',
+    TelescopePrompt = 'TELESCOPE',
+    Trouble = 'TROUBLE',
+    DiffviewFiles = 'DIFFVIEW',
+    Outline = 'OUTLINE',
+    NeogitStatus = 'NEOGIT',
+    mason = 'MASON',
+    spectre_panel = 'SPECTRE',
+    ['neo-tree'] = 'NEOTREE',
+    ['neo-tree-popup'] = 'NEOTREE POPUP',
+}
+
 local cterm = nil
+
+function M.separator(highlight, char)
+    return '%#' .. highlight .. '#' .. char
+end
 
 local function set_iconhighlight(iconhilight, state)
     -- iconhilight = 'DevIconLua', state = 'selected' ||  'inactive'
@@ -61,20 +95,6 @@ end
 
 function M.get_icon(opts, tabstate)
     local loaded, webdev_icons = pcall(require, 'nvim-web-devicons')
-    local icon_alt_filetype = {
-        fern = ' ',
-        undotree = ' ',
-        qf = ' ',
-        TelescopePrompt = ' ',
-        Trouble = ' ',
-        DiffviewFiles = ' ',
-        Outline = ' ',
-        NeogitStatus = ' ',
-        mason = ' ',
-        spectre_panel = ' ',
-        ['neo-tree'] = ' ',
-        ['neo-tree-popup'] = ' ',
-    }
 
     if has_value(icon_alt_filetype, opts.filetype) then
         return icon_alt_filetype[opts.filetype]
@@ -88,7 +108,7 @@ function M.get_icon(opts, tabstate)
     end
 end
 
-local function shortenFilename(bufname, options)
+local function shortenBufname(bufname, options)
     -- Shorten dir name
     local max = options.dir_max_chars
     local short =
@@ -102,23 +122,22 @@ local function shortenFilename(bufname, options)
     return parts
 end
 
-function M.filename(bufname, options, cache_key, state)
+function M.filename(attrs, options, cache_key, state)
     -- TODO: handle cache_key
     -- TODO: handle other buffer type icon
-
-    -- local filetype = fn.getbufvar(bufnr, '&filetype')
     local label = ''
-    if bufname == '' then
+    if attrs.bufname == '' and fn.empty(attrs.buftype) == 1 then
         label = label .. options.no_name .. ' '
+    elseif has_value(filename_alt_filetype, attrs.filetype) then
+        label = label .. filename_alt_filetype[attrs.filetype]
     else
-        local parts = shortenFilename(bufname, options)
-
+        local parts = shortenBufname(attrs.bufname, options)
         label = label .. get_tabhighlight(state) .. fn.join(parts, '/')
     end
     return label
 end
 
-local function is_file_buffer(bufnr)
+function M.is_file_buffer(bufnr)
     return fn.empty(fn.getbufvar(bufnr, '&buftype'))
 end
 
@@ -130,7 +149,7 @@ function M.wincount(buflist)
     local wincount = #buflist
     for _, v in ipairs(buflist) do
         local buffiletype = fn.getbufvar(v, '&filetype')
-        if fn.empty(buffiletype) == 1 or is_file_buffer(v) ~= 1 then
+        if fn.empty(buffiletype) == 1 or M.is_file_buffer(v) ~= 1 then
             wincount = wincount - 1
         end
     end
@@ -157,8 +176,9 @@ function M.modified(tabpage, bufmodified, options)
 end
 
 function M.get_project_root_dir()
-    return '%#TabLineAlt# %{badge#project()} %#TabLineAltShade#'
+    return '%#TabLineAlt# %{badge#project()} %#TabLineFill#'
 end
+
 function M.get_current_session()
     local str = ''
     str = str .. '%#TabLineFill#%T%=%#TabLine#' .. ' %{badge#branch()}   '
