@@ -156,10 +156,10 @@ function M.wincount(buflist)
     return (wincount > 1) and numtr(wincount, badge_numeric_charset) or ''
 end
 
-function M.modified(is_current_tabpage, bufmodified, options)
+function M.modified(is_current_tabpage, attrs, options)
     local s = ''
     if
-        bufmodified == 1
+        attrs.bufmodified == 1
         and options.show_modify
         and options.modify_indicator ~= nil
     then

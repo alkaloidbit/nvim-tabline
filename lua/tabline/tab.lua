@@ -9,12 +9,12 @@ function M.render(tabpage, options)
     local buflist = fn.tabpagebuflist(tabpage)
     -- current buffer in current win
     local bufnr = buflist[winnr]
-    local bufmodified = fn.getbufvar(bufnr, '&mod')
     local bufname = fn.bufname(bufnr)
     local is_current_tabpage = tabpage == fn.tabpagenr()
     local tabstate = is_current_tabpage and 'selected' or 'inactive'
     local attrs = {
         bufnr = bufnr,
+        bufmodified = fn.getbufvar(bufnr, '&mod'),
         bufname = bufname,
         extension = fn.fnamemodify(bufname, ':e'),
         filename = fn.fnamemodify(bufname, ':t'),
@@ -39,7 +39,7 @@ function M.render(tabpage, options)
     s = s .. utils.wincount(buflist)
 
     -- modify indicator
-    s = s .. utils.modified(is_current_tabpage, bufmodified, options)
+    s = s .. utils.modified(is_current_tabpage, attrs, options)
 
     s = is_current_tabpage
             and s .. '%#TabLineSel# ' .. utils.separator('TabLineFill', '')
