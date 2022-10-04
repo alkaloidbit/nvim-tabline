@@ -2,6 +2,7 @@
 -- David Zhang <https://github.com/crispgm>
 local utils = require('tabline.utils')
 local tab = require('tabline.tab')
+local log = require('tabline.log')
 
 local fn = vim.fn
 local M = {}
@@ -16,6 +17,7 @@ M.options = {
 }
 
 function M.currentBufInfo()
+    log.debug('currentBufInfo')
     local bufnr = vim.api.nvim_win_get_buf(0)
     local bufname = fn.bufname(bufnr)
     local filetype = fn.getbufvar(bufnr, '&filetype')
